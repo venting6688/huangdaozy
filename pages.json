@@ -1,0 +1,144 @@
+{
+  "pages": [
+	{
+		"path": "pages/medicine/index",
+		"style": {
+			"disableScroll": true
+		}
+	},
+	{
+	    "path": "pages/mine/index",
+	    "style": {
+	    	"disableScroll": true
+	    }
+	}
+	
+  ],
+  "subPackages": [{
+  	"root": "sub_packages",
+  	"pages": [
+		{
+			//物流配送
+			"path" : "logistics/index",
+			"style" : 
+			{
+				"disableScroll": true
+			}
+		},
+		{
+			//地址薄
+			"path" : "addressBook/index",
+			"style" : 
+			{
+				"disableScroll": true
+			}
+		},
+		{
+			//更多处方
+			"path" : "prescription/index",
+			"style" : 
+			{
+				"disableScroll": true
+			}
+		},
+		{
+			//家庭管理
+			"path" : "family/familyManage",
+			"style" : 
+			{
+				"disableScroll": true
+			}
+		},
+		{
+			//家庭管理-添加家庭成员
+			"path" : "family/familyInformation",
+			"style" : 
+			{
+				"disableScroll": true
+			}
+		},
+		{
+			//家庭管理-修改信息
+			"path" : "family/familyAmend",
+			"style" : 
+			{
+				"disableScroll": true
+			}
+		},
+		{
+			//在线建档-上传身份证
+			"path" : "filing/identityCard",
+			"style" : 
+			{
+				"disableScroll": true
+			}
+		},
+		{
+			//在线建档-填写信息页面
+			"path" : "filing/information",
+			"style" : 
+			{
+				"disableScroll": true
+			}
+		},
+		{
+		  "path": "login/index",
+		  "style": {
+		    "navigationBarTitleText": "登录",
+			"disableScroll": true
+		  }
+		},
+		{
+			//用户协议
+			"path" : "agreement/userAgreement",
+			"style" : 
+			{
+				"navigationBarTitleText": "用户协议",
+				"disableScroll": true
+			}
+		}
+	]
+  }],
+  "tabBar": {
+  		"color": "#7A7E83",
+  		"selectedColor": "#086d5b",
+  		"backgroundColor": "#ffffff",
+  		"list": [
+  			{
+  				"pagePath": "pages/medicine/index"
+  			},
+  			{
+  				"pagePath": "pages/mine/index"
+  			}
+  		]
+  		
+  	},
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+	"navigationStyle": "custom",
+    "navigationBarTitleText": "uni-app",
+	
+	"permission":{
+			"scope.userLocation":{
+				"desc":"获得用户当前位置"
+			},
+			"scope.userFuzzyLocation":{
+				"desc":"获得用户当前位置"
+			}
+		}
+  },
+  "easycom": {
+  		"^u-(.*)": "uview-ui/components/u-$1/u-$1.vue"
+  	},
+  "uniIdRouter": {},
+	"condition" : { //模式配置，仅开发期间生效
+		"current": 0, //当前激活的模式(list 的索引项)
+		"list": [
+			{
+				"name": "", //模式名称
+				"path": "", //启动页面，必选
+				"query": "" //启动参数，在页面的onLoad函数里面得到
+			}
+		]
+	}
+}
