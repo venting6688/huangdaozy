@@ -3,7 +3,6 @@
 		<CustomNavBar :showBack="showBack" :title="title"/>
 		<view class="content">
 			<view class="title">
-				<!-- <image @click="affirm" src="@/static/image/Frame 2121@2x.png" mode=""></image> -->
 				<image src="@/static/image/Frame 2121@2x.png" mode=""></image>
 				<view class="test">
 					<image v-if="stateName==='待取药' || stateName==='已取药'" src="@/static/image/Frame@2x.png" mode=""></image>
