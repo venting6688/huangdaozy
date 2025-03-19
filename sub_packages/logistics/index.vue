@@ -5,7 +5,7 @@
 		    :title="title"
 		/>
 		<!-- 新增地址 -->
-		<view class="content" v-if="title==='新增地址'">
+		<view class="content" v-if="title==='新增地址' || title=='编辑地址'">
 			<view class="head">
 				<image src="../static/image/Group 907@2x.png" mode=""></image>
 				<text>收件人</text>
@@ -21,7 +21,9 @@
 				<view class="cu-form-group">
 					<view class="title">省市区</view>
 					<picker mode="region" @change="chooseregion" :value="informationObj.provincesAndMunicipalities">
-					    <text class="picker ">{{informationObj.region}}</text>
+						<view class="picker">
+							<text>{{ informationObj.provincesAndMunicipalities }}</text>
+						</view>
 					</picker>
 				</view>
 				<view class="cu-form-group">
@@ -30,7 +32,10 @@
 				</view>
 			</form>
 			<view class="bottom">
-				<view class="confirm" @click="save">
+				<view class="confirm" @click="save" v-if="title==='新增地址'">
+					确认保存
+				</view>
+				<view class="confirm" @click="editAddress(informationObj)" v-else>
 					确认保存
 				</view>
 				<view class="delete" @click="deleteBtn">
@@ -49,12 +54,12 @@
 				</view>
 				<view class="cu-form-group">
 					<view class="title">配送地址</view>
-					<text>{{informationObj.detailedAddress}}</text>
+					<text>{{informationObj.provincesAndMunicipalities}} - {{informationObj.detailedAddress}}</text>
 				</view>
 			</form>
 			<view class="bottom">
-				<view class="confirm" @click="distribution(informationObj.id)">
-					确认配送
+				<view class="confirm" @click="distribution(informationObj.id)" v-if="title=='物流配送'">
+					物流配送
 				</view>
 				
 			</view>
@@ -83,7 +88,7 @@
 				informationObj:{
 					contactName:'',
 					contactNumbre:'',
-					region:['山东省','济南市','历下区'],
+					provincesAndMunicipalities:['山东省','济南市','历下区'],
 					detailedAddress:'',
 				},
 				prescNo: '', //处方编号
@@ -98,15 +103,38 @@
 				let loginValue = uni.getStorageSync("loginData");
 				loginValue = JSON.parse(loginValue);
 				
-				let isArray = Array.isArray(this.informationObj.region);
-				let regionStr = isArray ? this.informationObj.region.join('') : this.informationObj.region;
-				this.informationObj.detailedAddress = regionStr+this.informationObj.detailedAddress
+				let isArray = Array.isArray(this.informationObj.provincesAndMunicipalities);
+				let regionStr = isArray ? this.informationObj.provincesAndMunicipalities.join('') : this.informationObj.provincesAndMunicipalities;
+				this.informationObj.detailedAddress = this.informationObj.detailedAddress
 				this.informationObj.accountPhoneNumber = loginValue.phoneNum;
 				
 				addressApi.addAddresInfo(this.informationObj).then(res => {
 					if(res.data.code===200){
 						uni.showToast({
 							title: '添加成功',
+							duration: 3000
+						});
+						setTimeout(()=>{
+							uni.navigateBack();
+						},3000)
+					}else{
+						uni.showToast({
+							title: res.data.msg,
+							icon: 'error',
+							duration: 3000
+						});
+					}
+				})
+				.catch(err => {
+					console.log('2：', err);
+				})
+			},
+			//编辑地址
+			editAddress(item){
+				addressApi.editAddresInfo(item).then(res => {
+					if(res.data.code===200){
+						uni.showToast({
+							title: '修改成功',
 							duration: 3000
 						});
 						setTimeout(()=>{
@@ -157,27 +185,29 @@
 			},
 			//省市change function
 			chooseregion(event){
-				this.informationObj.region = event.detail.value.toString()
+				this.informationObj.provincesAndMunicipalities = event.detail.value.toString()
 			},
 			deleteBtn(){
 				this.informationObj = {
 					contactName:'',
 					contactNumbre:'',
-					region:['山东省','济南市','历下区'],
+					provincesAndMunicipalities:['山东省','济南市','历下区'],
 					detailedAddress:'',
 				}
 			},
 		},
 		onShow() {
 			const options = this.$mp.query;
-			if (options && options.informationObj) {
-				this.informationObj = JSON.parse(decodeURIComponent(options.informationObj))
+			if (options && options.informationObj && options.type == 'logistics') {
+				this.informationObj = JSON.parse(decodeURIComponent(options.informationObj));
 				this.prescNo = options.prescNo
 				this.title = '物流配送';
-			}else{
+			} else if(options && options.informationObj && options.type == 'edit') {
+				this.informationObj = JSON.parse(decodeURIComponent(options.informationObj));
+				this.title = '编辑地址';
+			} else {
 				this.title = '新增地址';
 			}
-			
 			this.showBack = true;
 		}
 	}

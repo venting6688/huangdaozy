@@ -1,9 +1,6 @@
 <template>
 	<view class="user">
-		<CustomNavBar
-		    :showBack="showBack"
-		    :title="title"
-		/>
+		<CustomNavBar :showBack="showBack" :title="title" />
 		<view class="content">
 			<view class="list">
 				<u-swipe-action class="swipe-container">
@@ -13,7 +10,7 @@
 					    v-for="(item,index) in list" :key="index"
 							@click="deleteAddress(item.id)"
 				    >
-				      <view @click="confirm(item)" class="swipe-action u-border-top u-border-bottom">
+				      <view @click="confirm(item, type)" class="swipe-action u-border-top u-border-bottom">
 				        <view class="swipe-action__content">
 				          <view class="midddle">
 				          	<view class="title">
@@ -21,7 +18,7 @@
 				          		<text>{{pixelateNumber(item.contactNumbre)}}</text>
 				          	</view>
 				          	<view class="address">
-				          		{{item.detailedAddress}}
+				          		{{item.provincesAndMunicipalities}} - {{item.detailedAddress}}
 				          	</view>
 				          </view>
 				        </view>
@@ -30,10 +27,7 @@
 				</u-swipe-action>
 			</view>
 		</view>
-		
-		<button class="cu-btn confirm" @click="confirm()">
-			新增地址
-		</button>
+		<button class="cu-btn confirm" @click="confirm({}, 'add')">新增地址</button>
 	</view>
 </template>
 
@@ -55,6 +49,7 @@
 				}],
 				list:[],
 				prescNo: '',
+				type: 'edit',
 			}
 		},
 		computed: {
@@ -65,10 +60,9 @@
 			getValue(list){
 				this.list.push(list)
 			},
-			confirm(item){
-				// uni.removeStorageSync('patient');
+			confirm(item, type){
 				uni.navigateTo({
-					url:`/sub_packages/logistics/index?informationObj=${item?encodeURIComponent(JSON.stringify(item)):''}&prescNo=${this.prescNo}`
+					url:`/sub_packages/logistics/index?informationObj=${item?encodeURIComponent(JSON.stringify(item)):''}&prescNo=${this.prescNo}&type=${type}`
 				})
 			},
 			//get list
@@ -123,6 +117,7 @@
 			this.prescNo = options.num; //获取处方号
 			this.showBack = true;
 			this.title = '地址簿';
+			this.type = options.type; //地址使用类型
 			this.getAddressList()
 		}
 	}

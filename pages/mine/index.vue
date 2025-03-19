@@ -27,7 +27,7 @@
 						</view>
 					</view>
 				</navigator>
-				<navigator url="/sub_packages/addressBook/index">
+				<navigator url="/sub_packages/addressBook/index?type=edit">
 					<view class="row">
 						<view class="left">
 							<veiw class="text">地址簿</veiw>
@@ -90,8 +90,6 @@
 		},
 		data(){
 			return {
-				// list:['更多处方','家庭成员管理','地址簿'],
-				// list2:['常见问题帮助','用户反馈','用户隐私保护说明'],
 				footState:2,
 			}
 		},
