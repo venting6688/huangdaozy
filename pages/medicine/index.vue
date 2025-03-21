@@ -34,13 +34,15 @@
 					<text>注意：请耐心等待,或申请配送到家</text>
 					<button class="cu-btn" @click="distribution(prescriptionObj.prescNo)">{{distributionName}}</button>
 				</view>
+				<view class="tips" v-if="prescriptionObj.presctype==='中药' && prescriptionObj.mailingStatus == '已申请'">
+					<text>注意：药品配送中，请注意通讯正常</text>
+					<button class="cu-btn" @click="viewLogistics('查看物流')">查看物流</button>
+				</view>
 				
 			</view>
 			<view class="drug">
 				<view class="drug-inventory">
-					<view class="drug-head">
-						药品清单
-					</view>
+					<view class="drug-head">药品清单</view>
 					<!-- 西药 -->
 					<ul v-if="prescriptionObj.presctype==='西药'" class="ul1">
 						<li v-for="(item,index) in prescriptionObj.dtlvws" :key="index">
@@ -79,16 +81,16 @@
 					</view>
 				</view>
 				<view class="drug-guidance">
-					<view class="drug-head">
-						用药指导
-					</view>
-					<ul>
+					<view class="drug-head">用药指导</view>
+					<navigator :url="`/pages/medicine/webview?url=${encodeURIComponent(JSON.stringify(prescriptionObj.url))}`" v-if="prescriptionObj.url">
+						<view class="drug-head">查看</view>
+					</navigator>
+					<!-- <ul>
 						<li v-for="(item,index) in prescriptionObj.list2" :key="index">
 							<image v-if src="@/static/image/Star 5@2x.png" mode=""></image>
 							<text>{{item}}</text>
 						</li>
-						
-					</ul>
+					</ul> -->
 				</view>
 			</view>
 		</view>
@@ -124,7 +126,6 @@
 		},
 		methods: {
 			getValue(str){
-				console.log('str',str)
 				this.distributionName = '查看物流'
 				this.stateName = '正在配送'
 			},
@@ -136,7 +137,7 @@
 			distribution(prescNo){
 				if(this.distributionName==='申请配送'){
 					uni.navigateTo({
-						url:`/sub_packages/addressBook/index?num=${prescNo}`
+						url:`/sub_packages/addressBook/index?num=${prescNo}&type=logistics`
 					})
 				}else{
 					uni.showToast({
@@ -145,7 +146,13 @@
 					    duration: 2000 
 					})  
 				}
-				
+			},
+			viewLogistics(){
+				uni.showToast({
+						title: '暂未开放',
+						icon: 'none',
+						duration: 2000 
+				})  
 			},
 			// 登录成功后重新渲染foot
 			updateData(){
@@ -157,20 +164,25 @@
 			//获取处方
 			getPrescription(){
 				try {
-					prescriptionApi.getPrescription().then(res => {
+					let loginValue = uni.getStorageSync("loginData");
+					let data = loginValue ? JSON.parse(loginValue) : {};
+					
+					prescriptionApi.getPrescription(data.defaultArchives.patientCard).then(res => {
 						if(res.data.code===200){
-							let arr = res.data.data.mstvws || []
-							this.prescriptionList = arr
-							this.prescriptionObj = {
-								prescNo: arr[this.num].prescNo,
-								reclocdesc: arr[this.num].reclocdesc,
-								reclocaddress: arr[this.num].reclocaddress,
-								presctype: arr[this.num].presctype,
-								payments: arr[this.num].payments,
-								mailingStatus: arr[this.num].mailingStatus,
+							let arr = res.data.data ? res.data.data.mstvws || [] : [];
+							if (arr.length) {
+								this.prescriptionList = arr
+								this.prescriptionObj = {
+									prescNo: arr[this.num].prescNo,
+									reclocdesc: arr[this.num].reclocdesc,
+									reclocaddress: arr[this.num].reclocaddress,
+									presctype: arr[this.num].presctype,
+									payments: arr[this.num].payments,
+									mailingStatus: arr[this.num].mailingStatus,
+								}
+								this.prescriptionObj.dtlvws = arr[this.num].dtlvws;
+								this.stateName = arr[this.num].status
 							}
-							this.prescriptionObj.dtlvws = arr[this.num].dtlvws;
-							this.stateName = arr[this.num].status
 						}else {
 							this.prescriptionList = []
 						}
@@ -180,12 +192,21 @@
 					//TODO handle the exception
 				}
 			},
-			startTimer() {
-				this.timer = setInterval(this.getPrescription, 10 * 60 * 1000); // 每隔 10 分钟请求一次
+			navigateToWebView(url) {
+				uni.navigateTo({
+					url: `/pages/medicine/webview?url=${encodeURIComponent(url)}`
+				});
 			},
+			//设置定时器
+			startTimer() {
+				this.timer = setInterval(() => {
+					this.getPrescription();
+				}, 10 * 60 * 1000); //每隔 10 分钟请求一次
+			},
+			// 清除定时器
 			clearTimer() {
 				if (this.timer) {
-					clearInterval(this.timer); // 清除定时器
+					clearInterval(this.timer);
 					this.timer = null;
 				}
 			},
@@ -193,7 +214,6 @@
 		onShow() {
 			let loginValue = uni.getStorageSync("loginData");
 			let data = loginValue ? JSON.parse(loginValue) : {};
-			console.log(data.defaultArchives);
 			if (!data.defaultArchives) {
 				login.loginData()
 			} else {
@@ -203,9 +223,6 @@
 		onLoad() {
 			this.startTimer();
 		},
-		// mounted(){
-		// 	this.prescription(this.prescriptionList[0],0)
-		// },
 		onUnload() {
 			this.clearTimer();
 		},
@@ -393,7 +410,8 @@
 				}
 				.drug-guidance{
 					padding: 20rpx;
-					
+					display: flex;
+					justify-content: space-between;
 					ul {
 						li {
 							padding: 10rpx 0;

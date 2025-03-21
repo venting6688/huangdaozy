@@ -91,10 +91,12 @@
 			},
 			//获取处方
 			getPrescription(){
+				let loginValue = uni.getStorageSync("loginData");
+				let data = loginValue ? JSON.parse(loginValue) : {};
 				try {
-					prescriptionApi.getPrescription().then(res => {
+					prescriptionApi.getPrescription(data.defaultArchives.patientCard).then(res => {
 						if(res.data.code===200){
-							let arr = res.data.data.mstvws || []
+							let arr = res.data.data ? res.data.data.mstvws || [] : [];
 							this.prescriptionList = arr
 						}else {
 							this.prescriptionList = []

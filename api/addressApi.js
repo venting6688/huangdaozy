@@ -18,6 +18,15 @@ const address = {
 		return res
 	},
 	
+	//update address
+	async editAddresInfo(details) {
+		const res = await cjRequest({
+			url: "dierzhongyiyuan/deliveryAddress/edit",
+			method: "put",
+			data: details,
+		})
+		return res
+	},
 	//delete address
 	async deleteAddress(id) {
 		const res = await cjRequest({

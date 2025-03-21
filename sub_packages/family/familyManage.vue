@@ -8,14 +8,14 @@
 			<ul>
 				<li v-for="(item,index) in patientList.slice(0,5)" :key="item.patientCard">
 					<view class="title">
-						<view class="name" @click="amend(index)">
+						<view class="name" @click="amend(item)">
 							<text class="big">{{pixelate(item.patientName)}}</text>
-							<text class="small">{{item.sex=='1'?'男':'女'}}</text>
+							<text class="small">{{item.sex}}</text>
 							<text class="relation">{{item.relation}}</text>
 						    <image src="../static/image/icon-edit.png" mode=""></image>
 						</view>
 						<view class="ok" @click="updateDefaultArchives(item)">
-							<image v-if="footData.patientName==item.patientName" src="../static/image/icon-ok.png" mode=""></image>
+							<image v-if="item.defaultType == 1" src="../static/image/icon-ok.png" mode=""></image>
 							<image v-else src="../static/image/grayOk.png" mode=""></image>
 							<text>默认就诊人</text>
 						</view>
@@ -23,16 +23,16 @@
 					<view class="center">
 						<view class="content">
 							<text>证件号：</text>
-							<text>{{pixelateNumber(item.patientCard ? item.patientCard.toString() : '')}}</text>
+							<text>{{pixelateNumber(item.idNum ? item.idNum.toString() : '')}}</text>
 						</view>
 						
 						<view class="content" v-if="item.unfold">
 							<text>余额：</text>
 							<text class="money">￥{{item.accBalance ? item.accBalance : 0}}</text>
 						</view>
-						<view class="img" v-if="item.unfold">
+						<!-- <view class="img" v-if="item.unfold">
 							<image src="../static/image/healthCard.png" mode=""></image>
-						</view>
+						</view> -->
 					</view>
 					<view class="bottomBtn" @click="unfoldFun(index)">
 						<text>{{!item.unfold?'展开详情':'收起详情'}}</text>
@@ -42,9 +42,10 @@
 				</li>
 			</ul>
 		</view>
-		<view class="btn" @click="increase" v-if="this.patientList.length <= 5">
+		<!-- v-if="this.patientList.length <= 5" （剩{{5-this.patientList.length}}人） -->
+		<view class="btn" @click="increase" >
 			<image src="../static/image/icon-add.png" mode=""></image>
-			<text>添加家庭成员（剩{{5-this.patientList.length}}人）</text>
+			<text>添加家庭成员</text>
 		</view>
 	</view>
 </template>
@@ -54,6 +55,8 @@
 	import {mapMutations , mapState} from 'vuex'
 	import HeaderbarApi from '@/api/HeaderbarApi.js'
 	import CustomNavBar from '@/components/CustomNavBar.vue';
+	import filingApi from '@/api/filingApi.js'
+	
 	export default {
 		mixins: [mixin],
 		components:{
@@ -62,21 +65,6 @@
 		data(){
 			return {
 				patientList:[],
-			}
-		},
-		onShow() {
-			let loginValue = uni.getStorageSync("loginData");
-			if(loginValue){
-				let registerData = JSON.parse(loginValue)
-				this.patientList = registerData && registerData.archivesList
-				this.patientList.forEach((item, i) => {
-				    item.defaul = false;
-				    this.$set(this.patientList, i, item);
-				});
-				// console.log('this.patientList',this.patientList)
-				const temp = this.patientList[0];
-				temp.default = true;
-				this.$set(this.patientList, 0, temp);
 			}
 		},
 		computed: {
@@ -90,10 +78,28 @@
 			...mapMutations({
 				setFootData:'SET_FOOT_DATA',
 			}),
-			amend(index){
+			amend(item){
 				uni.navigateTo({
-					url: `/sub_packages/family/familyAmend?informationObj=${encodeURIComponent(JSON.stringify(this.patientList[index]))}`
+					url: `/sub_packages/family/familyAmend?informationObj=${encodeURIComponent(JSON.stringify(item))}`
 				})
+			},
+			//获取家庭成员
+			getFamilyList(){
+				try {
+					let loginValue = uni.getStorageSync("loginData");
+					loginValue = JSON.parse(loginValue);
+					filingApi.getFamilyList(loginValue.phoneNum).then(res => {
+						if(res.data.code===200){
+							let arr = res.data.data.archivesList || []
+							this.patientList = arr
+						}else {
+							this.patientList = []
+						}
+					})
+				} catch (error) {
+					console.log(error)
+					//TODO handle the exception
+				}
 			},
 			// 刷新用户信息
 			async refreshUserInfo(phoneNum){
@@ -116,7 +122,7 @@
 			async updateDefaultArchives(item){
 				let loginValue = uni.getStorageSync("loginData");
 				let value = JSON.parse(loginValue)
-				if(item.patientCard===value.defaultArchives.patientCard){
+				if(item.patientCard === value.defaultArchives.patientCard){
 					return
 				}
 				try{
@@ -124,9 +130,7 @@
 						phone:item.phoneNum,
 						patientCard:item.patientCard,
 					}
-				const res = await HeaderbarApi
-					.updateDefaultArchives(data)
-					.then((result) => {
+					const res = await HeaderbarApi.updateDefaultArchives(data).then((result) => {
 						this.$emit('handle',item)
 						this.refreshUserInfo(value.phoneNum)
 					})
@@ -144,6 +148,21 @@
 					url: `/sub_packages/family/familyInformation`
 				})
 			},
+		},
+		onShow() {
+			this.getFamilyList();
+			// let loginValue = uni.getStorageSync("loginData");
+			// if(loginValue){
+			// 	let registerData = JSON.parse(loginValue)
+			// 	this.patientList = registerData && registerData.archivesList
+			// 	this.patientList.forEach((item, i) => {
+			// 	    item.defaul = false;
+			// 	    this.$set(this.patientList, i, item);
+			// 	});
+			// 	const temp = this.patientList[0];
+			// 	temp.default = true;
+			// 	this.$set(this.patientList, 0, temp);
+			// }
 		}
 	}
 </script>

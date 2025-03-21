@@ -27,10 +27,9 @@
 				<view class="title">家庭住址</view>
 				<input v-model="informationObj.address" name="input" />
 			</view>
-			
 			<view class="cu-form-group">
 				<view class="title">身份证号</view>
-				<input v-model="informationObj.patientCard" type="idcard" name="input" />
+				<input v-model="informationObj.idNum" type="idcard" name="input" />
 			</view>
 
 			<view class="cu-form-group">
@@ -42,14 +41,9 @@
 				<input v-model="informationObj.relation"  type="number" name="input" />
 			</view>
 		</form>
-		
 		<view class="confirm">
-			<view  @click="queueFilingInfo(1)" >
-				保存信息
-			</view>
-			<!-- <view  @click="queueFilingInfo(2)">
-				删除家庭成员
-			</view> -->
+			<view  @click="updateFamilyInfo()" >确认修改</view>
+			<view  @click="deleteFamily(informationObj.patientCard)">删除家庭成员</view>
 		</view>
 	</view>
 </template>
@@ -81,7 +75,8 @@
 			endDate() { return this.getDate('end') }
 		},
 		onLoad(e) {
-			this.informationObj = JSON.parse(decodeURIComponent(e.informationObj))
+			this.informationObj = JSON.parse(decodeURIComponent(e.informationObj));
+			console.log(JSON.stringify(this.informationObj));
 		},
 		mounted() {
 			this.showBack = true;
@@ -109,32 +104,52 @@
 			relationBtn(i){
 				this.informationObj.relation = i
 			},
-			
-			queueFilingInfo(num){
-				if(num===1){
-					let loginValue = uni.getStorageSync("loginData");
-					let loginData = JSON.parse(loginValue)
-					this.informationObj.cloudUser = loginData
-					filingApi.queueFilingInfo(this.informationObj).then(res => {
-						if(res.data.code===200){
-							uni.showToast({
-								title: '添加成功',
-								duration: 2000
+			//修改家庭成员信息
+			updateFamilyInfo() {
+				filingApi.updateFamilyInfo(this.informationObj).then(res => {
+					if(res.data.code===200){
+						uni.showToast({ title: '修改成功', duration: 2000 });
+						setTimeout(()=>{
+							uni.navigateBack({
+								delta: 3
 							});
-							uni.setStorageSync('loginData', JSON.stringify(res.data.data))
-							setTimeout(()=>{
-								uni.navigateBack({
-									delta: 3
-								});
-							},2000)
-						}
-					})
-					.catch(err => {
-						console.log('2：', err);
-					})	
-				}
-				
+						},2000)
+					}
+				})
+				.catch(err => {
+					console.log('2：', err);
+				})	
 			},
+			//删除
+			deleteFamily(card) {
+				uni.showModal({
+					title: "提示",
+					content: "确定删除该成员吗？",
+					success: (res) => {
+						if (res.confirm) {
+							try {
+								let loginValue = uni.getStorageSync("loginData");
+								let loginData = JSON.parse(loginValue)
+								filingApi.deleteFamilyInfo(card, loginData.phoneNum).then(res => {
+									if(res.data.code === 200){
+										uni.showToast({ title: "删除成功", duration: 2000 });
+										setTimeout(()=>{
+											uni.navigateBack({
+												delta: 3
+											});
+										},2000)
+									}else {
+										this.list = []
+									}
+								})
+							} catch (error) {
+								console.log(error)
+								//TODO handle the exception
+							}
+						}
+					},
+				});
+			}
 		}
 	}
 </script>

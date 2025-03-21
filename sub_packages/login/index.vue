@@ -58,6 +58,7 @@
 					this.getPhoneNumberFn(e.detail.code, res.code).then(data => { // 服务端获取手机号
 						if (data.code === 200) {
 							let items = JSON.stringify(data.data)
+							console.log(items,'=====');
 							uni.setStorageSync('loginData', items)
 							uni.showToast({
 								title: '登录成功'
@@ -65,7 +66,7 @@
 							const pages = getCurrentPages(); 
 							console.log('pages',pages)
 							const prevPage = pages[pages.length - 2]; 
-							console.log('prevPage',prevPage)
+							// console.log('prevPage',prevPage)
 							prevPage.$vm.updateData(); 
 							uni.navigateBack();
 						}

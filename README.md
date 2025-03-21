@@ -1,2 +1,0 @@
-# huangdaozy
-vue-uniapp
