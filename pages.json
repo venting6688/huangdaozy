@@ -11,6 +11,15 @@
 	    "style": {
 	    	"disableScroll": true
 	    }
+	},
+	{
+	    "path": "pages/medicine/webview",
+	    "style": {
+	    	"disableScroll": false,
+				"navigationBarTitleText": "查看用药指导",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+	    }
 	}
 	
   ],

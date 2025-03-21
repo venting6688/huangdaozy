@@ -82,12 +82,15 @@
 				</view>
 				<view class="drug-guidance">
 					<view class="drug-head">用药指导</view>
-					<ul>
+					<navigator :url="`/pages/medicine/webview?url=${encodeURIComponent(JSON.stringify(prescriptionObj.url))}`" v-if="prescriptionObj.url">
+						<view class="drug-head">查看</view>
+					</navigator>
+					<!-- <ul>
 						<li v-for="(item,index) in prescriptionObj.list2" :key="index">
 							<image v-if src="@/static/image/Star 5@2x.png" mode=""></image>
 							<text>{{item}}</text>
 						</li>
-					</ul>
+					</ul> -->
 				</view>
 			</view>
 		</view>
@@ -188,6 +191,11 @@
 					console.log(error)
 					//TODO handle the exception
 				}
+			},
+			navigateToWebView(url) {
+				uni.navigateTo({
+					url: `/pages/medicine/webview?url=${encodeURIComponent(url)}`
+				});
 			},
 			//设置定时器
 			startTimer() {
@@ -402,7 +410,8 @@
 				}
 				.drug-guidance{
 					padding: 20rpx;
-					
+					display: flex;
+					justify-content: space-between;
 					ul {
 						li {
 							padding: 10rpx 0;
