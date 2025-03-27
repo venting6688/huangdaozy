@@ -34,7 +34,7 @@
 							<image src="../static/image/healthCard.png" mode=""></image>
 						</view> -->
 					</view>
-					<view class="bottomBtn" @click="unfoldFun(index)">
+					<view class="bottomBtn" @click="healthCard()">
 						<text>{{!item.unfold?'展开详情':'收起详情'}}</text>
 						<image v-if="!item.unfold" src="../static/image/bottom.png" mode=""></image>
 						<image v-else src="../static/image/top.png" mode=""></image>
@@ -42,6 +42,34 @@
 				</li>
 			</ul>
 		</view>
+		<!-- 微信确认授权 -->
+		<view v-if="isWechatAuth">
+			<health-card-login 
+				wechatcode="true"
+				@authSuccess="authSuccess"
+			>
+			  <view>点击跳转到微信授权页</view>
+			</health-card-login>
+		</view>
+		<!-- 一键授权 -->
+		<view v-if="isCreateUser">
+			<health-card-users 
+				type="auth"
+			  hospitalId="40088"
+			  :select="selectCallback"
+			  :addCard="addCard"
+			  :switchType="switchTypeCallback"
+			/>
+		</view>
+		
+		<!-- 添加新成员 -->
+		<!-- <view v-if="isCreateCard">
+			<health-card-create-card 
+			hospitalId="40088" 
+			:finish="createdCallback"
+			/>
+		</view> -->
+		
 		<!-- v-if="this.patientList.length <= 5" （剩{{5-this.patientList.length}}人） -->
 		<view class="btn" @click="increase" >
 			<image src="../static/image/icon-add.png" mode=""></image>
@@ -56,7 +84,6 @@
 	import HeaderbarApi from '@/api/HeaderbarApi.js'
 	import CustomNavBar from '@/components/CustomNavBar.vue';
 	import filingApi from '@/api/filingApi.js'
-	
 	export default {
 		mixins: [mixin],
 		components:{
@@ -65,6 +92,9 @@
 		data(){
 			return {
 				patientList:[],
+				isWechatAuth: false,
+				isCreateCard: false,
+				isCreateUser: false,
 			}
 		},
 		computed: {
@@ -138,11 +168,67 @@
 					console.log(e);
 				}
 			},
-			unfoldFun(index){
-				const temp = this.patientList[index]
-				temp.unfold = !this.patientList[index].unfold
-				this.$set(this.patientList, index, temp)
+			//电子健康卡
+			healthCard(){
+				const plugin = requirePlugin('healthCardPlugins');
+				plugin.login((isok, res) => {
+					if (!isok && res.result.toLogin) {
+						// 用户未授权，需要用户同意授权，显示 healthCardLogin 登录组件，引导用户同意授权
+						this.isWechatAuth = true;
+					} else {
+						// 用户在微信授权过，可直接获取登录信息，处理后续业务
+						this.todo(res);
+					}
+				}, { wechatCode: true });
 			},
+			todo(res) {
+				this.isWechatAuth = false;
+				this.isCreateUser = true;
+				// this.isCreateCard = true;
+				console.log('success: ',JSON.stringify(res))
+			},
+			
+			//微信授权成功
+			authSuccess(e) {
+			  console.log('我是第二步授权----authSuccess', e);
+				this.todo(e.detail)
+			},
+			//选择卡
+			selectCallback(result) {
+				console.log('selectCallback: ', result);
+				const data = result.detail || {};
+				const { healthCode = '' } = data;
+				wx.showModal({
+					showCancel: false,
+					title: 'healthCode',
+					content: healthCode,
+				});
+			},
+			
+			// 点击添加用卡人
+			addCard(event) {
+				console.log('addCard', event);
+				// TODO 跳转到开发商建卡页面
+			},
+		
+			// 点击管理健康卡or完成管理
+			switchTypeCallback(data) {
+				console.log('切换type到：', data.detail.type);
+			},
+			
+			 // 建卡回调
+			createdCallback(result) {
+				console.log('createdCallback: ', result);
+				const data = result.detail || {};
+				const { healthCode = '' } = data;
+				wx.showModal({
+					showCancel: false,
+					title: 'healthCode',
+					content: healthCode,
+				});
+			},
+			
+			//新增家庭成员
 			increase() {
 				uni.navigateTo({
 					url: `/sub_packages/family/familyInformation`
@@ -151,18 +237,6 @@
 		},
 		onShow() {
 			this.getFamilyList();
-			// let loginValue = uni.getStorageSync("loginData");
-			// if(loginValue){
-			// 	let registerData = JSON.parse(loginValue)
-			// 	this.patientList = registerData && registerData.archivesList
-			// 	this.patientList.forEach((item, i) => {
-			// 	    item.defaul = false;
-			// 	    this.$set(this.patientList, i, item);
-			// 	});
-			// 	const temp = this.patientList[0];
-			// 	temp.default = true;
-			// 	this.$set(this.patientList, 0, temp);
-			// }
 		}
 	}
 </script>
