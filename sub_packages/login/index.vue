@@ -53,22 +53,17 @@
 			},
 			onGetPhoneNumber(e){ 
 			    this.loginFn().then(res => {  // 微信登录&服务端获取openid
-					console.log(res, '登录code')
-					console.log('获取手机号的动态令牌:', e.detail.code) // 动态令牌
+					console.log("登录返回的信息：", JSON.stringify(res));
+					console.log('手机号动态令牌：',e.detail.code);
 					this.getPhoneNumberFn(e.detail.code, res.code).then(data => { // 服务端获取手机号
+					console.log(JSON.stringify(data.code));
 						if (data.code === 200) {
 							let items = JSON.stringify(data.data)
-							console.log(items,'=====');
 							uni.setStorageSync('loginData', items)
 							uni.showToast({
 								title: '登录成功'
 							})
-							const pages = getCurrentPages(); 
-							console.log('pages',pages)
-							const prevPage = pages[pages.length - 2]; 
-							// console.log('prevPage',prevPage)
-							prevPage.$vm.updateData(); 
-							uni.navigateBack();
+							wx.reLaunch({url: `/pages/medicine/index`})
 						}
 					})
 				})
@@ -95,7 +90,7 @@
 						}).then(r => {
 							if (r.data.code !== 200) {
 								uni.showToast({
-								    title: r.data.msg,
+								    title: `登录失败`,
 								    icon: 'none',   
 								    duration: 2000 
 								}) 
@@ -105,7 +100,7 @@
 						})
 						.catch(err => {
 							uni.showToast({
-							    title: '登录失败',
+							    title: `登录失败:${err}`,
 							    icon: 'none',   
 							    duration: 2000 
 							})  

@@ -1,8 +1,4 @@
-
- 
 import { cjRequest } from '@/utils/service.js'
- 
- 
 const prescription = {
 	// 获取首页处方列表
 	async getPrescription(cardNo) {

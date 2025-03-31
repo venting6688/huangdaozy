@@ -19,15 +19,15 @@
 				<view class="pre-middle">
 					<view>
 						<text>处方单号:</text>
-						<text>{{prescriptionObj.prescNo}}</text>
+						<text>{{prescriptionObj.prescNo ? prescriptionObj.prescNo : '1001'}}</text>
 					</view>
 					<view>
 						<text>取药科室:</text>
-						<text>{{prescriptionObj.reclocdesc}}</text>
+						<text>{{prescriptionObj.reclocdesc ? prescriptionObj.reclocdesc : '西药房'}}</text>
 					</view>
 					<view>
 						<text>科室位置:</text>
-						<text>{{prescriptionObj.reclocaddress}}</text>
+						<text>{{prescriptionObj.reclocaddress ? prescriptionObj.reclocaddress : '一楼东侧'}}</text>
 					</view>
 				</view>
 				<view class="tips" v-if="prescriptionObj.presctype==='中药' && (!prescriptionObj.mailingStatus || prescriptionObj.mailingStatus == '未申请')">
@@ -40,7 +40,7 @@
 				</view>
 				
 			</view>
-			<view class="drug">
+			<view class="drug" v-if="prescriptionObj">
 				<view class="drug-inventory">
 					<view class="drug-head">药品清单</view>
 					<!-- 西药 -->

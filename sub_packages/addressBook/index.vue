@@ -27,7 +27,7 @@
 				</u-swipe-action>
 			</view>
 		</view>
-		<button class="cu-btn confirm" @click="confirm({}, 'add')">新增地址</button>
+		<button  class="cu-btn confirm" @click="confirm({}, 'add')">新增地址</button>
 	</view>
 </template>
 

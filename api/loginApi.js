@@ -14,7 +14,7 @@ const patient = {
 					openidCode:data.openidCode, 
 	   		}
 	   
-	   	})
+	   	},2)
 	   	return res
 	   },
 }
